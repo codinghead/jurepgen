@@ -5,6 +5,7 @@ from xml.etree import ElementTree
 from xml.dom import minidom
 from datetime import datetime
 import argparse, sys, encodings, os
+import xml.etree.ElementTree as ET
 
 def prettify(elem):
 	"""Return a pretty-printed XML strong for the Element.
@@ -36,22 +37,60 @@ def createJunitReport(filename, testsuitesname, verbose):
 		sys.exit(2)
 	return
 
-def createJunitTestsuite(testsuitename):
+def createJunitTestsuite(filename, testsuitename, verbose):
 	"""Create a JUnit testsuite element - not finished
 	"""
-	testsuite = "Test"
+	if verbose:
+		print("Adding testsuite")
+
+	try:
+		tree = ET.parse(filename)
+		xmlRoot = tree.getroot()
+		child = ET.Element("testsuite")
+		child.set("name", testsuitename)
+		child.set("tests", "0")
+		child.set("disabled", "0")
+		child.set("errors", "0")
+		child.set("failures", "0")
+		child.set("hostname", "")
+		child.set("id", "")
+		child.set("package", "")
+		child.set("skipped", "0")
+		child.set("time", "0")
+		timenow = datetime.now().replace(microsecond=0).isoformat()
+		print(timenow)
+		#print(datetime.now().replace(microsecond=0).isoformat())
+		child.set("timestamp", timenow)
+		xmlRoot.append(child)
+		# find element and add attribute
+		#print("Ranking")
+		#rank = xmlRoot.iter("testsuite")
+		#rank.set("name", name)
+		#print("Finished")
+		#sub = ET.SubElement(xmlRoot, "testsuite")
+		#sub.set("name", name)
+		tree.write(filename, xml_declaration=True, encoding='utf-8')
+	except:
+		#print(ET.ParseError)
+		print("File error occured during modifying XML")
+		sys.exit(2)
 	return
 
 def main():
 	verbose = False
-	testsuitesname = ""
+	name = ""
+	addtestsuite = False
+	addtest = False
 
 	parser = argparse.ArgumentParser()
-	group = parser.add_mutually_exclusive_group()
-	group.add_argument("-i", "--inputfile", help="XML input file name")
-	group.add_argument("-o", "--outputfile", help="XML output file name")
+	groupone = parser.add_mutually_exclusive_group()
+	groupone.add_argument("-i", "--inputfile", help="XML input file name")
+	groupone.add_argument("-o", "--outputfile", help="XML output file name")
 	parser.add_argument("-v", "--verbose", help="output status during operation", action="store_true")
-	parser.add_argument("-n", "--name", help="testsuites name")
+	parser.add_argument("-n", "--name", help="name of testsuites, testsuite or test")
+	grouptwo = parser.add_mutually_exclusive_group()
+	grouptwo.add_argument("-s", "--testsuite", help="add testsuite", action="store_true")
+	grouptwo.add_argument("-t", "--test", help="add test", action="store_true")
 	args = parser.parse_args()
 
 	if args.verbose:
@@ -59,14 +98,30 @@ def main():
 		print("Verbose Mode")
 
 	if args.name:
-		testsuitesname = args.name
+		name = args.name
 		if verbose:
-			print("testsuites name is: {}".format(args.name))
+			print("name is: {}".format(name))
+
+	if args.testsuite:
+		if verbose:
+			print("Adding testsuite")
+		addtestsuite = True
+	elif args.test:
+		if verbose:
+			print("Adding test")
+		addtest = True
 
 	if args.inputfile:
+		filename = args.inputfile
 		if verbose:
-			print("Input file name found: {}".format(args.inputfile))
-		sys.exit()
+			print("Input file name found: {}".format(filename))
+
+		if not os.path.exists(filename):
+			print("Failure: input file does not exist {}".format(filename))
+			sys.exit(2)
+		if addtestsuite:
+			createJunitTestsuite(filename, name, verbose)
+			sys.exit()
 
 	elif args.outputfile:
 		filename = args.outputfile
@@ -77,7 +132,7 @@ def main():
 			print("Failure: output file exists {}".format(filename))
 			sys.exit(2)
 
-		createJunitReport(filename, testsuitesname, verbose)
+		createJunitReport(filename, name, verbose)
 		sys.exit()
 
 if __name__ == "__main__":
