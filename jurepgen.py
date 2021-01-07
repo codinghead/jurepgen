@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 from xml.etree.ElementTree import Element, SubElement, Comment, ElementTree
-#from xml.etree import ElementTree
 from xml.dom import minidom
 from datetime import datetime
 import argparse, sys, encodings, os
