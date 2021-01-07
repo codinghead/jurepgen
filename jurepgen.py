@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-from xml.etree.ElementTree import Element, SubElement, Comment
-from xml.etree import ElementTree
+from xml.etree.ElementTree import Element, SubElement, Comment, ElementTree
+#from xml.etree import ElementTree
 from xml.dom import minidom
 from datetime import datetime
 import argparse, sys, encodings, os
@@ -15,33 +15,32 @@ def prettify(elem):
 	return reparsed.toprettyxml(indent="  ")
 
 def createJunitReport(filename, testsuitesname, verbose):
-	"""Create a JUnit testsuites element
+	"""Create a basic JUnit file with testsuites element
 	"""
-	testsuites = Element("testsuites")
-	testsuites.set("disabled", "0")
-	testsuites.set("errors", "0")
-	testsuites.set("failures", "0")
-	testsuites.set("name", testsuitesname)
-	testsuites.set("tests", "0")
-	testsuites.set("time", "0")
-	testsuitescomment = "Generated using " + __file__ + " on " + str(datetime.now())
-	testsuitescomment = Comment(testsuitescomment)
-	testsuites.append(testsuitescomment)
 	if verbose:
-		print(prettify(testsuites))
+		print("-o option: Attempting to create JUnit file")
 	try:
-		with open(filename, "w") as fout:
-			fout.write(prettify(testsuites))
+		xmlRoot = Element("testsuites")
+		xmlRoot.set("disabled", "0")
+		xmlRoot.set("errors", "0")
+		xmlRoot.set("failures", "0")
+		xmlRoot.set("name", testsuitesname)
+		xmlRoot.set("tests", "0")
+		xmlRoot.set("time", "0")
+		xmlRootComment = "Generated using " + __file__ + " on " + str(datetime.now().replace(microsecond=0).isoformat())
+		xmlRootComment = Comment(xmlRootComment)
+		xmlRoot.append(xmlRootComment)
+		ElementTree(xmlRoot).write(filename, xml_declaration=True, encoding='utf-8')
 	except:
-		print("File error occured during open for write")
+		print("File error occured during -o option creating XML")
 		sys.exit(2)
-	return
+	return	
 
 def createJunitTestsuite(filename, testsuitename, verbose):
-	"""Create a JUnit testsuite element - not finished
+	"""Add a JUnit testsuite element to existing file
 	"""
 	if verbose:
-		print("Adding testsuite")
+		print("-t option: Adding testsuite")
 
 	try:
 		tree = ET.parse(filename)
@@ -59,20 +58,11 @@ def createJunitTestsuite(filename, testsuitename, verbose):
 		child.set("time", "0")
 		timenow = datetime.now().replace(microsecond=0).isoformat()
 		print(timenow)
-		#print(datetime.now().replace(microsecond=0).isoformat())
 		child.set("timestamp", timenow)
 		xmlRoot.append(child)
-		# find element and add attribute
-		#print("Ranking")
-		#rank = xmlRoot.iter("testsuite")
-		#rank.set("name", name)
-		#print("Finished")
-		#sub = ET.SubElement(xmlRoot, "testsuite")
-		#sub.set("name", name)
 		tree.write(filename, xml_declaration=True, encoding='utf-8')
 	except:
-		#print(ET.ParseError)
-		print("File error occured during modifying XML")
+		print("File error occured during -t option adding testuite to XML")
 		sys.exit(2)
 	return
 
