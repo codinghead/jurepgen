@@ -35,7 +35,7 @@ def createJunitReport(filename, testsuitesname, verbose):
 		sys.exit(2)
 	return	
 
-def createJunitTestsuite(filename, testsuitename, verbose):
+def createJunitTestsuite(filename, testsuitename, hostname, verbose):
 	"""Add a JUnit testsuite element to existing file
 	"""
 	# create testsuite ID counter
@@ -62,7 +62,7 @@ def createJunitTestsuite(filename, testsuitename, verbose):
 		child.set("disabled", "0")
 		child.set("errors", "0")
 		child.set("failures", "0")
-		child.set("hostname", "")
+		child.set("hostname", hostname)
 		child.set("id", str(tsid))
 		child.set("package", "")
 		child.set("skipped", "0")
@@ -88,13 +88,15 @@ def addJunitProperties(filename, verbose):
 		#print(tree)
 		xmlRoot = tree.getroot()
 		#print(xmlRoot)
+
 		#Find last testsuite element
 		#count = 0
-		for testsuite in xmlRoot.iter("testsuite"):			
+		for testsuite in xmlRoot.iter("testsuite"):
 			lastts = testsuite
 			#print(testsuite.tag, count)
 			#count = count+1
 		#print(count)
+
 		ET.SubElement(lastts, "properties")
 		#print("Added properties")
 		#xmlRoot.append(lastts)
@@ -142,7 +144,7 @@ def main():
 	addproperty = False
 	propertiesvalue = ""
 	# default hostname is localhost
-	hotname = "localhost"
+	hostname = "localhost"
 
 	parser = argparse.ArgumentParser()
 	groupone = parser.add_mutually_exclusive_group()
@@ -159,7 +161,7 @@ def main():
 	parser.add_argument("-n", "--name", help="name of testsuites, testsuite, or test")
 	parser.add_argument("-w", "--value", help="value for property option")
 	parser.add_argument("-j", "--hostname", help="hostname for testsuite")
-
+	parser.add_argument("-r", "--packagename", help="packagename for testsuite")
 
 	args = parser.parse_args()
 
@@ -179,7 +181,7 @@ def main():
 
 
 	if args.hostname:
-		hotname = args.value
+		hostname = args.hostname
 		if verbose:
 			print("hostame is: {}".format(hostname))
 
@@ -209,7 +211,7 @@ def main():
 			print("Failure: input file does not exist {}".format(filename))
 			sys.exit(2)
 		if addtestsuite:
-			createJunitTestsuite(filename, name, verbose)
+			createJunitTestsuite(filename, name, hostname, verbose)
 			sys.exit()
 		elif addproperties:
 			addJunitProperties(filename, verbose)
