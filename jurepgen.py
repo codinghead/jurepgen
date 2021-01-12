@@ -38,6 +38,8 @@ def createJunitReport(filename, testsuitesname, verbose):
 def createJunitTestsuite(filename, testsuitename, verbose):
 	"""Add a JUnit testsuite element to existing file
 	"""
+	# create testsuite ID counter
+	tsid = 0
 	if verbose:
 		print("-t option: Adding testsuite")
 
@@ -46,6 +48,14 @@ def createJunitTestsuite(filename, testsuitename, verbose):
 		#print(tree)
 		xmlRoot = tree.getroot()
 		#print(xmlRoot)
+
+		# count number of existing testsuite elements to determine ID
+		for existingts in xmlRoot.iter("testsuite"):
+			tsid +=1
+
+		if verbose:
+			print("ID is: {}".format(str(tsid)))
+
 		child = ET.Element("testsuite")
 		child.set("name", testsuitename)
 		child.set("tests", "0")
@@ -53,7 +63,7 @@ def createJunitTestsuite(filename, testsuitename, verbose):
 		child.set("errors", "0")
 		child.set("failures", "0")
 		child.set("hostname", "")
-		child.set("id", "")
+		child.set("id", str(tsid))
 		child.set("package", "")
 		child.set("skipped", "0")
 		child.set("time", "0")
@@ -131,19 +141,26 @@ def main():
 	addproperties = False
 	addproperty = False
 	propertiesvalue = ""
+	# default hostname is localhost
+	hotname = "localhost"
 
 	parser = argparse.ArgumentParser()
 	groupone = parser.add_mutually_exclusive_group()
 	groupone.add_argument("-i", "--inputfile", help="XML input file name")
 	groupone.add_argument("-o", "--outputfile", help="XML output file name")
-	parser.add_argument("-v", "--verbose", help="output status during operation", action="store_true")
-	parser.add_argument("-n", "--name", help="name of testsuites, testsuite, or test")
-	parser.add_argument("-w", "--value", help="value for -p option")
+
 	grouptwo = parser.add_mutually_exclusive_group()
 	grouptwo.add_argument("-s", "--testsuite", help="add testsuite with a -n name", action="store_true")
-	grouptwo.add_argument("-p", "--properties", help="add properties to a testsuite", action="store_true")
-	grouptwo.add_argument("-q", "--property", help="add property with value to properties", action="store_true")
+	grouptwo.add_argument("-p", "--properties", help="add properties to last testsuite", action="store_true")
+	grouptwo.add_argument("-q", "--property", help="add named property with value to properties")
 	grouptwo.add_argument("-t", "--test", help="add test with a -n name", action="store_true")
+
+	parser.add_argument("-v", "--verbose", help="output status during operation", action="store_true")
+	parser.add_argument("-n", "--name", help="name of testsuites, testsuite, or test")
+	parser.add_argument("-w", "--value", help="value for property option")
+	parser.add_argument("-j", "--hostname", help="hostname for testsuite")
+
+
 	args = parser.parse_args()
 
 	if args.verbose:
@@ -159,6 +176,12 @@ def main():
 		propertiesvalue = args.value
 		if verbose:
 			print("value is: {}".format(propertiesvalue))
+
+
+	if args.hostname:
+		hotname = args.value
+		if verbose:
+			print("hostame is: {}".format(hostname))
 
 	if args.testsuite:
 		if verbose:
