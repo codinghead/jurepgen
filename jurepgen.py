@@ -114,24 +114,24 @@ def addJunitProperty(filename, propertyname, propertyvalue, verbose):
 
 	try:
 		tree = ET.parse(filename)
-		print(tree)
+		#print(tree)
 		xmlRoot = tree.getroot()
-		print(xmlRoot)
+		#print(xmlRoot)
 		#Find last testsuite element
-		count = 0
+		#count = 0
 		for properties in xmlRoot.iter("properties"):			
 			lastp = properties
-			print(properties.tag, count)
-			count = count+1
-		print(count)
+			#print(properties.tag, count)
+			#count = count+1
+		#print(count)
 		newproperty = ET.SubElement(lastp, "property")
 		newproperty.attrib["name"] = propertyname
 		newproperty.attrib["value"] = propertyvalue
-		print("Added property")
+		#print("Added property")
 		#xmlRoot.append(lastts)
 		tree.write(filename, xml_declaration=True, encoding='utf-8')
 	except:
-		print("File error occured during -p option adding properties to testsuite")
+		print("File error occured during -q option adding property to properties")
 		sys.exit(2)
 	return
 
@@ -142,7 +142,8 @@ def main():
 	addtest = False
 	addproperties = False
 	addproperty = False
-	propertiesvalue = ""
+	propertyname = ""
+	propertyvalue = ""
 	# default hostname is localhost
 	hostname = "localhost"
 
@@ -159,7 +160,7 @@ def main():
 
 	parser.add_argument("-v", "--verbose", help="output status during operation", action="store_true")
 	parser.add_argument("-n", "--name", help="name of testsuites, testsuite, or test")
-	parser.add_argument("-w", "--value", help="value for property option")
+	parser.add_argument("-w", "--propertyvalue", help="value for property option")
 	parser.add_argument("-j", "--hostname", help="hostname for testsuite")
 	parser.add_argument("-r", "--packagename", help="packagename for testsuite")
 
@@ -174,16 +175,15 @@ def main():
 		if verbose:
 			print("name is: {}".format(name))
 	
-	if args.value:
-		propertiesvalue = args.value
-		if verbose:
-			print("value is: {}".format(propertiesvalue))
-
-
 	if args.hostname:
 		hostname = args.hostname
 		if verbose:
 			print("hostame is: {}".format(hostname))
+
+	if args.propertyvalue:
+		propertyvalue = args.propertyvalue
+		if verbose:
+			print("propertyvalue is: {}".format(propertyvalue))
 
 	if args.testsuite:
 		if verbose:
@@ -194,8 +194,9 @@ def main():
 			print("Adding properties")
 		addproperties = True
 	elif args.property:
+		propertyname = args.property
 		if verbose:
-			print("Adding property")
+			print("Adding property named: {}".format(propertyname))
 		addproperty = True
 	elif args.test:
 		if verbose:
@@ -217,7 +218,7 @@ def main():
 			addJunitProperties(filename, verbose)
 			sys.exit()
 		elif addproperty:
-			addJunitProperty(filename, name, propertiesvalue, verbose)
+			addJunitProperty(filename, propertyname, propertyvalue, verbose)
 			sys.exit()
 
 	elif args.outputfile:
