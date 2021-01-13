@@ -117,7 +117,7 @@ def addJunitProperty(filename, propertyname, propertyvalue, verbose):
 		#print(tree)
 		xmlRoot = tree.getroot()
 		#print(xmlRoot)
-		#Find last testsuite element
+		#Find last properties element
 		#count = 0
 		for properties in xmlRoot.iter("properties"):			
 			lastp = properties
@@ -135,6 +135,31 @@ def addJunitProperty(filename, propertyname, propertyvalue, verbose):
 		sys.exit(2)
 	return
 
+def addJunitTestcase(filename, name, classname, status, time, verbose):
+	dummycount = 0
+
+	if verbose:
+		print("-t option: Adding testcase element")
+
+	try:
+		tree = ET.parse(filename)
+		xmlRoot = tree.getroot()
+		#Find last testsuite element
+		for testsuite in xmlRoot.iter("testsuite"):
+			dummycount += 1
+		testcase = ET.SubElement(testsuite, "testcase")
+		testcase.attrib["name"] = name
+		# currently ignoring assertions
+		testcase.attrib["assertions"] = ""
+		testcase.attrib["classname"] = classname
+		testcase.attrib["status"] = status
+		testcase.attrib["time"] = time
+		tree.write(filename, xml_declaration=True, encoding='utf-8')
+	except:
+		print("File error occured during -t option adding testcase")
+		sys.exit(2)
+	return
+
 def main():
 	verbose = False
 	name = ""
@@ -146,6 +171,12 @@ def main():
 	propertyvalue = ""
 	# default hostname is localhost
 	hostname = "localhost"
+	message = ""
+	type = ""
+	status = ""
+	time = ""
+	description = ""
+	classname = ""
 
 	parser = argparse.ArgumentParser()
 	groupone = parser.add_mutually_exclusive_group()
@@ -156,13 +187,16 @@ def main():
 	grouptwo.add_argument("-s", "--testsuite", help="add testsuite with a -n name", action="store_true")
 	grouptwo.add_argument("-p", "--properties", help="add properties to last testsuite", action="store_true")
 	grouptwo.add_argument("-q", "--property", help="add named property with value to properties")
-	grouptwo.add_argument("-t", "--test", help="add test with a -n name", action="store_true")
+	grouptwo.add_argument("-t", "--testcase", help="add testcase with a -n name", action="store_true")
 
 	parser.add_argument("-v", "--verbose", help="output status during operation", action="store_true")
-	parser.add_argument("-n", "--name", help="name of testsuites, testsuite, or test")
+	parser.add_argument("-n", "--name", help="name of testsuites, testsuite, or testcase")
 	parser.add_argument("-w", "--propertyvalue", help="value for property option")
 	parser.add_argument("-j", "--hostname", help="hostname for testsuite")
 	parser.add_argument("-r", "--packagename", help="packagename for testsuite")
+	parser.add_argument("-m", "--message", help="message for skipped, error or failure of testcase")
+	parser.add_argument("-y", "--type", help="type for error or failure of testcase")
+	parser.add_argument("-d", "--description", help="description for error or failure of testcase")
 
 	args = parser.parse_args()
 
@@ -174,11 +208,16 @@ def main():
 		name = args.name
 		if verbose:
 			print("name is: {}".format(name))
-	
+
 	if args.hostname:
 		hostname = args.hostname
 		if verbose:
 			print("hostame is: {}".format(hostname))
+
+	if args.message:
+		message = args.message
+		if verbose:
+			print("message is:{}".format(message))
 
 	if args.propertyvalue:
 		propertyvalue = args.propertyvalue
@@ -198,10 +237,10 @@ def main():
 		if verbose:
 			print("Adding property named: {}".format(propertyname))
 		addproperty = True
-	elif args.test:
+	elif args.testcase:
 		if verbose:
-			print("Adding test")
-		addtest = True
+			print("Adding testcase")
+		addtestcase = True
 
 	if args.inputfile:
 		filename = args.inputfile
@@ -219,6 +258,9 @@ def main():
 			sys.exit()
 		elif addproperty:
 			addJunitProperty(filename, propertyname, propertyvalue, verbose)
+			sys.exit()
+		elif addtestcase:
+			addJunitTestcase(filename, name, classname, status, time, verbose)
 			sys.exit()
 
 	elif args.outputfile:
