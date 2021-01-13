@@ -1,6 +1,5 @@
 # jurepgen
-JUnit Report Generator
-======================
+# JUnit Report Generator
 
 jurepgen will be a JUnit test report generator written in Python. Goal is to allow any testing framework for any code to generate JUnit reports that can be displayed using Jenkins.
 
@@ -10,8 +9,8 @@ This program is designed to be called from the command line within Jenkins as a 
 
 The process is as follows:
 
-* python3 jurepgen.py -o "testresults.xml"
-** Generates basic JUnit compliant XML file with timestamp
-* python3 jurepgen.py -i "testreuslts.xml" -t -n "Test Suite 1"
-** Adds "Test Suite 1" testsuite to existing JUnit XML file.
+- python3 jurepgen.py -o "testresults.xml"
+	- Generates basic JUnit compliant XML file with timestamp
+- python3 jurepgen.py -i "testreuslts.xml" -t -n "Test Suite 1"
+	- Adds "Test Suite 1" testsuite to existing JUnit XML file.
 
